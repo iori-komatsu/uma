@@ -44,10 +44,15 @@ class 状態(NamedTuple):
     ラストスパート基準速度: float
     ラストスパート開始位置: float  # 残り何mから開始するか
 
+class 高低(NamedTuple):
+    位置: float
+    高さ: float
+
 class コース(NamedTuple):
     距離: float
     バ場種類: str
     バ場状態: str
+    アップダウン: List[高低]
 
 def フェーズ(状態: 状態, コース: コース):
     r = 6.0 * 状態.残り距離 / コース.距離
