@@ -19,7 +19,7 @@ tokyo = コース(
     アップダウン=[
         高低(2000, 0),
         高低(1900, 0),
-        高低(1290, -1.75),
+        高低(1290, -1.90),
         高低(1200, -0.20),
         高低(1120, -0.20),
         高低(890,  -2.9),
@@ -49,7 +49,7 @@ fig.suptitle(suptitle, fontsize=10)
 
 ax_dist = fig.add_subplot(4, 1, 1)
 ax_dist.set_title("残り距離[m]", fontsize=8)
-ax_dist.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(2000.0 / 3.0))
+ax_dist.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(400))
 
 ax_hp = fig.add_subplot(4, 1, 2)
 ax_hp.set_title("残りHP", fontsize=8)
@@ -61,8 +61,8 @@ ax_vel.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))
 
 ax_acc = fig.add_subplot(4, 1, 4)
 ax_acc.set_title("加速度[m/s^2]", fontsize=8)
-ax_acc.set_ylim(0.35, 0.40)
-ax_acc.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(0.0125))
+ax_acc.set_ylim(0.0, 0.50)
+ax_acc.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(0.1))
 
 for ax in [ax_dist, ax_hp, ax_vel, ax_acc]:
     ax.set_xticks(result.フェーズ境界)
