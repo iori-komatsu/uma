@@ -1,3 +1,5 @@
+import numpy as np
+import matplotlib.pyplot as plt
 from uma import *
 
 status = ステータス(
@@ -12,13 +14,17 @@ status = ステータス(
     バ場適性=A,
 )
 tokyo = コース(距離=2000, バ場種類='芝', バ場状態='重')
-modified_status = ステータス補正(status, 普通, tokyo)
 
-state = 状態(
-    現在速度=10,
-    残りHP=初期HP(modified_status, tokyo),
-    フェーズ=0,
-    ウマ状態=ウマ状態(掛かり=False, ペースダウン=False, 下り坂加速=False),
-    ラストスパート基準速度=None,
-    ラストスパート開始位置=None,
-)
+result = simulate(status, tokyo, 普通)
+
+dist = np.array(result.残り距離)
+hp = np.array(result.残りHP)
+vel = np.array(result.速度)
+acc = np.array(result.加速度)
+
+fig, axes = plt.subplots(4, 1)
+axes[0].plot(dist)
+axes[1].plot(hp)
+axes[2].plot(vel)
+axes[3].plot(acc)
+fig.savefig('out/fig.png')
