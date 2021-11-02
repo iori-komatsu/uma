@@ -252,6 +252,7 @@ class SimulationResult(NamedTuple):
     残りHP: List[float]
     速度: List[float]
     加速度: List[float]
+    フェーズ境界: List[int]
 
 def simulate(生ステータス: ステータス, コース: コース, やる気: str):
     status = ステータス補正(生ステータス, やる気, コース)
@@ -269,9 +270,11 @@ def simulate(生ステータス: ステータス, コース: コース, やる�
         残りHP=[],
         速度=[],
         加速度=[],
+        フェーズ境界=[0],
     )
 
     frame = 0
+    last_phase = 0
 
     while state.残り距離 > 0.0:
         phase = フェーズ(state, コース)
@@ -308,7 +311,12 @@ def simulate(生ステータス: ステータス, コース: コース, やる�
         result.残りHP.append(state.残りHP)
         result.速度.append(state.現在速度)
         result.加速度.append(a)
+        if phase != last_phase:
+            result.フェーズ境界.append(frame)
 
         frame += 1
+        last_phase = phase
+
+    result.フェーズ境界.append(frame)
 
     return result
