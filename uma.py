@@ -252,6 +252,9 @@ def 加速度(状態: 状態, コース: コース, 補正ステータス: ス�
 
     return 係数 * math.sqrt(500.0 * 補正ステータス.パワー) * 脚質係数 * バ場適性係数 * 距離適性係数
 
+def 減速時加速度(状態: 状態, コース: コース) -> float:
+    return [-1.2, -0.8, -1.0, -1.0][フェーズ(状態, コース)]
+
 def スタートダッシュ加速度(状態: 状態, コース: コース, 補正ステータス: ステータス) -> float:
     return 加速度(状態, コース, 補正ステータス) + 24.0
 
@@ -292,7 +295,10 @@ def next_velocity(curr_vel: float, curr_acc: float, target_vel: float) -> float:
     v = curr_vel / FPS
     # [m/f] -> [m/s]
     next_vel = (v+a) * FPS
-    return min(next_vel, target_vel)
+    if a >= 0:
+        return min(next_vel, target_vel)
+    else:
+        return max(next_vel, target_vel)
 
 class SimulationResult(NamedTuple):
     残り距離: List[float]
@@ -343,6 +349,10 @@ def simulate(生ステータス: ステータス, コース: コース, やる�
             v_min = 最低速度(コース, status)
             v_max = 1e8
             target_vel = 目標速度(state, コース, status)
+
+        if target_vel < state.現在速度:
+            # 減速する
+            a = 減速時加速度(state, コース)
 
         next_v = next_velocity(state.現在速度, a, target_vel)
         next_v = max(next_v, v_min)
