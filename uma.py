@@ -20,7 +20,7 @@ G='G'
 絶不調='絶不調'
 
 def log(x, prefix):
-    print("{} = {:.2f}".format(prefix, x))
+    print("{} = {}".format(prefix, x))
     return x
 
 class ステータス(NamedTuple):
@@ -64,6 +64,7 @@ class スキル(NamedTuple):
     基礎持続時間: float
     種類: str
     補正量: float
+    発動: bool = True
 
 def フェーズ(状態: 状態, コース: コース):
     r = 6.0 * 状態.残り距離 / コース.距離
@@ -345,9 +346,12 @@ def simulate(生ステータス: ステータス, コース: コース, やる�
         for skill in skills.values():
             if skill.名前 in running_skills or skill.名前 in finished_skills:
                 continue
+            if not skill.発動:
+                continue
             if state.残り距離 <= skill.発動位置:
                 # 発動！
                 running_skills[skill.名前] = frame
+                #log((frame, running_skills), "skills")
         # スキル終了判定
         for skill_name, 発動F in list(running_skills.items()):
             skill = skills[skill_name]
@@ -356,9 +360,11 @@ def simulate(生ステータス: ステータス, コース: コース, やる�
             if frame - 発動F > 持続時間F:
                 del running_skills[skill_name]
                 finished_skills.add(skill_name)
+                #log((frame, finished_skills), "skill_end")
         v_mod = 0 # スキルによる目標速度補正量
         a_mod = 0 # スキルによる加速度補正量
         for skill_name in running_skills:
+            #log((frame, skill_name), "skill")
             skill = skills[skill_name]
             if skill.種類 == '目標速度アップ':
                 v_mod += skill.補正量
