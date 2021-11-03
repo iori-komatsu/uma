@@ -4,16 +4,19 @@ import matplotlib.pyplot as plt
 from uma import *
 
 status = ステータス(
-    スピード=1200.0,
-    スタミナ=900.0,
-    パワー=1200.0,
+    スピード=1000.0,
+    スタミナ=700.0,
+    パワー=800.0,
     根性=350.0,
-    賢さ=1200.0,
+    賢さ=500.0,
     脚質=先行,
     脚質適性=A,
     距離適性=A,
     バ場適性=A,
 )
+yaruki = 普通
+kaifuku = 回復スキル累計(金=1, 白=0, 下位固有=0, 八方にらみ=1, 焦り=0)
+
 tokyo = コース(
     距離=2000, バ場種類='芝', バ場状態='重',
     アップダウン=[
@@ -26,11 +29,15 @@ tokyo = コース(
         高低(440,  -2.0),
         高低(300,  0),
         高低(0,    0),
-    ])
-yaruki = 絶好調
-kaifuku = 5.5 # マエストロ
+    ],
+    最終直線位置=525.0,
+    最終コーナー位置=750.0,
+)
 
 result = simulate(status, tokyo, yaruki, kaifuku)
+
+log(result.最終コーナー突入F / FPS, "最終コーナー突入[秒]")
+log(result.最終直線突入F / FPS, "最終直線突入[秒]")
 
 t = np.arange(len(result.残り距離)) / FPS
 dist = np.array(result.残り距離)
@@ -44,9 +51,9 @@ plt.rcParams['font.family'] = "Noto Sans JP"
 fig = plt.figure(figsize=(8, 7), dpi=100)
 
 suptitle = '\n'.join([
-    '{}/{}/{}/{}/{} {}/{}/{}/{} ({})'.format(
+    '{}/{}/{}/{}/{} {}/{}/{}/{} ({}) スキル回復{}%'.format(
         int(status.スピード), int(status.スタミナ), int(status.パワー), int(status.根性), int(status.賢さ),
-        status.脚質, status.脚質適性, status.距離適性, status.バ場適性, yaruki,
+        status.脚質, status.脚質適性, status.距離適性, status.バ場適性, yaruki, kaifuku,
     ),
     '{}m {} {}'.format(tokyo.距離, tokyo.バ場種類, tokyo.バ場状態),
     'タイム={:.2f}秒, 残りHP={:.0f}'.format(t[-1], hp[-1]),
@@ -73,10 +80,12 @@ ax_acc.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(0.1))
 
 for ax in [ax_dist, ax_hp, ax_vel, ax_acc]:
     ax.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(10))
-    ax.xaxis.set_minor_locator(matplotlib.ticker.FixedLocator(np.array(result.フェーズ境界) / FPS))
     ax.grid(which='major', axis='x')
-    ax.grid(which='minor', axis='x', linestyle='--')
     ax.grid(which='major', axis='y')
+    ax.axvline(x=result.最終コーナー突入F / FPS, c='tomato', linestyle=':')
+    ax.axvline(x=result.最終直線突入F / FPS, c='tomato', linestyle=':')
+    for frame in result.フェーズ境界:
+        ax.axvline(x=frame / FPS, c='plum', linestyle='-')
 
 fig.tight_layout()
 
