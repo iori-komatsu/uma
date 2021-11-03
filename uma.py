@@ -18,8 +18,8 @@ G='G'
 不調='不調'
 絶不調='絶不調'
 
-def debug(x):
-    print(x)
+def log(x, prefix):
+    print("{} = {:.1f}".format(prefix, x))
     return x
 
 class ステータス(NamedTuple):
@@ -282,6 +282,9 @@ def ラストスパート目標速度(状態: 状態, コース: コース, 補�
 #        dist += state.現在速度 / FPS
 #    return dist
 
+def 回復スキル回復量(回復量pct: float, コース: コース, 補正ステータス: ステータス) -> float:
+    return 初期HP(補正ステータス, コース) * 回復量pct / 100.0
+
 ################################################################################
 
 FPS = 15.0
@@ -307,11 +310,12 @@ class SimulationResult(NamedTuple):
     加速度: List[float]
     フェーズ境界: List[int]
 
-def simulate(生ステータス: ステータス, コース: コース, やる気: str):
+def simulate(生ステータス: ステータス, コース: コース, やる気: str, 回復スキル回復量pct: float):
     status = ステータス補正(生ステータス, やる気, コース)
     state = 状態(
         現在速度=3.0,
-        残りHP=初期HP(status, コース),
+        # 回復スキルによる回復は一番最初から入れておく
+        残りHP=log(初期HP(status, コース), "初期HP") + log(回復スキル回復量(回復スキル回復量pct, コース, status), "回復スキル回復量"),
         残り距離=コース.距離,
         ウマ状態=ウマ状態(掛かり=False, ペースダウン=False, 下り坂加速=False),
         ラストスパート基準速度=None,

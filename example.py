@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 from uma import *
 
 status = ステータス(
-    スピード=1000.0,
+    スピード=1200.0,
     スタミナ=900.0,
-    パワー=800.0,
+    パワー=1200.0,
     根性=350.0,
-    賢さ=500.0,
+    賢さ=1200.0,
     脚質=先行,
     脚質適性=A,
     距離適性=A,
@@ -28,8 +28,9 @@ tokyo = コース(
         高低(0,    0),
     ])
 yaruki = 絶好調
+kaifuku = 5.5 # マエストロ
 
-result = simulate(status, tokyo, yaruki)
+result = simulate(status, tokyo, yaruki, kaifuku)
 
 t = np.arange(len(result.残り距離)) / FPS
 dist = np.array(result.残り距離)
@@ -42,10 +43,14 @@ plt.rcParams['font.family'] = "Noto Sans JP"
 
 fig = plt.figure(figsize=(8, 7), dpi=100)
 
-suptitle = '{}/{}/{}/{}/{} {}/{}/{}/{} ({})\n'.format(
-    int(status.スピード), int(status.スタミナ), int(status.パワー), int(status.根性), int(status.賢さ),
-    status.脚質, status.脚質適性, status.距離適性, status.バ場適性, yaruki,
-) + '{}m {} {}'.format(tokyo.距離, tokyo.バ場種類, tokyo.バ場状態)
+suptitle = '\n'.join([
+    '{}/{}/{}/{}/{} {}/{}/{}/{} ({})'.format(
+        int(status.スピード), int(status.スタミナ), int(status.パワー), int(status.根性), int(status.賢さ),
+        status.脚質, status.脚質適性, status.距離適性, status.バ場適性, yaruki,
+    ),
+    '{}m {} {}'.format(tokyo.距離, tokyo.バ場種類, tokyo.バ場状態),
+    'タイム={:.2f}秒, 残りHP={:.0f}'.format(t[-1], hp[-1]),
+])
 fig.suptitle(suptitle, fontsize=10)
 
 ax_dist = fig.add_subplot(4, 1, 1)
@@ -57,7 +62,7 @@ ax_hp.set_title("残りHP", fontsize=8)
 ax_hp.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(500))
 
 ax_vel = fig.add_subplot(4, 1, 3)
-ax_vel.set_title("速度－基準速度[m/s]", fontsize=8)
+ax_vel.set_title("速度－基準速度[m/s]  (基準速度={}m/s)".format(基準速度(tokyo)), fontsize=8)
 ax_vel.set_ylim(-1.0, 5.0)
 ax_vel.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1))
 
