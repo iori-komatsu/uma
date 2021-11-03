@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from uma import *
 
 status = ステータス(
-    スピード=1000.0,
+    スピード=900.0,
     スタミナ=650.0,
     パワー=800.0,
     根性=350.0,
@@ -84,7 +84,7 @@ log(pacemaker_result.残りHP[-1], "ペースメーカー残りHP")
 log(len(pacemaker_result.残りHP) / FPS, "ペースメーカータイム[秒]")
 pacemaker_dist = np.array(pacemaker_result.残り距離)
 if len(pacemaker_dist) < len(dist):
-    pacemaker_dist.append(np.zeros(len(dist) - len(pacemaker_dist)))
+    pacemaker_dist = np.concatenate((pacemaker_dist, np.zeros(len(dist) - len(pacemaker_dist))))
 if len(pacemaker_dist) > len(dist):
     pacemaker_dist = pacemaker_dist[:len(dist)]
 
