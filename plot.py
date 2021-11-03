@@ -17,6 +17,23 @@ status = ステータス(
 yaruki = 普通
 kaifuku = 回復スキル累計(金=1, 白=0, 下位固有=0, 八方にらみ=0, 焦り=0)
 
+skills = [
+    スキル(
+        名前='レッツ・アナボリック！',
+        発動位置=2000.0/3.0,
+        基礎持続時間=2.4,
+        種類='加速度アップ',
+        補正量=0.2,
+    ),
+    スキル(
+        名前='差し切り体制',
+        発動位置=2000.0/3.0,
+        基礎持続時間=1.8,
+        種類='加速度アップ',
+        補正量=0.2,
+    )
+]
+
 tokyo = コース(
     距離=2000, バ場種類='芝', バ場状態='重',
     アップダウン=[
@@ -34,7 +51,7 @@ tokyo = コース(
     最終コーナー位置=750.0,
 )
 
-result = simulate(status, tokyo, yaruki, kaifuku)
+result = simulate(status, tokyo, yaruki, kaifuku, skills)
 
 log(result.最終コーナー突入F / FPS, "最終コーナー突入[秒]")
 log(result.フェーズ境界[1] / FPS, "ラストスパート開始[秒]")
@@ -78,8 +95,8 @@ ax_vel.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1))
 
 ax_acc = fig.add_subplot(4, 1, 4)
 ax_acc.set_title("加速度[m/s^2]", fontsize=8)
-ax_acc.set_ylim(0.0, 0.50)
-ax_acc.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(0.1))
+ax_acc.set_ylim(0.0, 1.0)
+ax_acc.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(0.2))
 
 for ax in [ax_dist, ax_hp, ax_vel, ax_acc]:
     ax.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))

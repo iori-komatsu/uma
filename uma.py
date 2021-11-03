@@ -1,4 +1,4 @@
-from typing import NamedTuple, List
+from typing import Dict, NamedTuple, List
 import math
 
 A='A'
@@ -56,6 +56,13 @@ class コース(NamedTuple):
     アップダウン: List[高低]
     最終直線位置: float
     最終コーナー位置: float
+
+class スキル(NamedTuple):
+    名前: str
+    発動位置: float
+    基礎持続時間: float
+    種類: str
+    補正量: float
 
 def フェーズ(状態: 状態, コース: コース):
     r = 6.0 * 状態.残り距離 / コース.距離
@@ -304,7 +311,7 @@ class SimulationResult(NamedTuple):
     ラストスパート加速完了F: int
     残り200m通過F: int
 
-def simulate(生ステータス: ステータス, コース: コース, やる気: str, 回復スキル回復量pct: float):
+def simulate(生ステータス: ステータス, コース: コース, やる気: str, 回復スキル回復量pct: float, skills: List[スキル]):
     status = ステータス補正(生ステータス, やる気, コース)
     state = 状態(
         現在速度=3.0,
@@ -313,6 +320,7 @@ def simulate(生ステータス: ステータス, コース: コース, やる�
         残り距離=コース.距離,
         ウマ状態=ウマ状態(掛かり=False, ペースダウン=False, 下り坂加速=False),
     )
+    skills = {skill.名前: skill for skill in skills}
 
     result = SimulationResult(
         残り距離=[],
@@ -328,8 +336,34 @@ def simulate(生ステータス: ステータス, コース: コース, やる�
 
     frame = 0
     last_phase = 0
+    running_skills = {} # {スキル名: 発動フレーム}
+    finished_skills = set()
 
     while state.残り距離 > 0.0:
+        # スキル発動判定
+        for skill in skills.values():
+            if skill.名前 in running_skills or skill.名前 in finished_skills:
+                continue
+            if state.残り距離 <= skill.発動位置:
+                # 発動！
+                running_skills[skill.名前] = frame
+        # スキル終了判定
+        for skill_name, 発動F in list(running_skills.items()):
+            skill = skills[skill_name]
+            持続時間 = skill.基礎持続時間 * コース.距離 / 1000.0
+            持続時間F = 持続時間 * FPS
+            if frame - 発動F > 持続時間F:
+                del running_skills[skill_name]
+                finished_skills.add(skill_name)
+        v_mod = 0 # スキルによる目標速度補正量
+        a_mod = 0 # スキルによる加速度補正量
+        for skill_name in running_skills:
+            skill = skills[skill_name]
+            if skill.種類 == '目標速度アップ':
+                v_mod += skill.補正量
+            elif skill.種類 == '加速度アップ':
+                a_mod += skill.補正量
+
         phase = フェーズ(state, コース)
         if phase >= 2:
             # ラストスパート
@@ -353,6 +387,9 @@ def simulate(生ステータス: ステータス, コース: コース, やる�
         if target_vel < state.現在速度:
             # 減速する
             a = 減速時加速度(state, コース)
+
+        a += a_mod
+        target_vel += v_mod
 
         next_v = next_velocity(state.現在速度, a, target_vel)
         next_v = max(next_v, v_min)
