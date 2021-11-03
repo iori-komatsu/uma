@@ -39,6 +39,7 @@ result = simulate(status, tokyo, yaruki, kaifuku)
 log(result.最終コーナー突入F / FPS, "最終コーナー突入[秒]")
 log(result.フェーズ境界[1] / FPS, "ラストスパート開始[秒]")
 log(result.最終直線突入F / FPS, "最終直線突入[秒]")
+log(result.ラストスパート加速完了F / FPS, "ラストスパート加速完了[秒]")
 log(result.残り200m通過F / FPS, "残り200m通過[秒]")
 
 t = np.arange(len(result.残り距離)) / FPS
