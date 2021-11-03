@@ -364,6 +364,8 @@ def simulate(生ステータス: ステータス, コース: コース, やる�
                 v_mod += skill.補正量
             elif skill.種類 == '加速度アップ':
                 a_mod += skill.補正量
+            else:
+                raise RuntimeError("知らない種類です: {}".format(skill))
 
         phase = フェーズ(state, コース)
         if phase >= 2:
@@ -385,12 +387,12 @@ def simulate(生ステータス: ステータス, コース: コース, やる�
             v_max = 1e8
             target_vel = 目標速度(state, コース, status)
 
+        a += a_mod
+        target_vel += v_mod
+
         if target_vel < state.現在速度:
             # 減速する
             a = 減速時加速度(state, コース)
-
-        a += a_mod
-        target_vel += v_mod
 
         next_v = next_velocity(state.現在速度, a, target_vel)
         next_v = max(next_v, v_min)
