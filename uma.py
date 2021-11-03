@@ -301,6 +301,7 @@ class SimulationResult(NamedTuple):
     フェーズ境界: List[int]
     最終直線突入F: int
     最終コーナー突入F: int
+    残り200m通過F: int
 
 def simulate(生ステータス: ステータス, コース: コース, やる気: str, 回復スキル回復量pct: float):
     status = ステータス補正(生ステータス, やる気, コース)
@@ -320,6 +321,7 @@ def simulate(生ステータス: ステータス, コース: コース, やる�
         フェーズ境界=[],
         最終直線突入F=-1,
         最終コーナー突入F=-1,
+        残り200m通過F=-1,
     )
 
     frame = 0
@@ -370,6 +372,8 @@ def simulate(生ステータス: ステータス, コース: コース, やる�
             result = result._replace(最終直線突入F=frame)
         if result.最終コーナー突入F == -1 and state.残り距離 <= コース.最終コーナー位置:
             result = result._replace(最終コーナー突入F=frame)
+        if result.残り200m通過F == -1 and state.残り距離 <= 200:
+            result = result._replace(残り200m通過F=frame)
 
         frame += 1
         last_phase = phase

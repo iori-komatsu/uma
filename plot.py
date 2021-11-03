@@ -5,17 +5,17 @@ from uma import *
 
 status = ステータス(
     スピード=1000.0,
-    スタミナ=700.0,
+    スタミナ=650.0,
     パワー=800.0,
     根性=350.0,
-    賢さ=500.0,
-    脚質=先行,
+    賢さ=400.0,
+    脚質=差し,
     脚質適性=A,
     距離適性=A,
     バ場適性=A,
 )
 yaruki = 普通
-kaifuku = 回復スキル累計(金=1, 白=0, 下位固有=0, 八方にらみ=1, 焦り=0)
+kaifuku = 回復スキル累計(金=1, 白=0, 下位固有=0, 八方にらみ=0, 焦り=0)
 
 tokyo = コース(
     距離=2000, バ場種類='芝', バ場状態='重',
@@ -37,7 +37,9 @@ tokyo = コース(
 result = simulate(status, tokyo, yaruki, kaifuku)
 
 log(result.最終コーナー突入F / FPS, "最終コーナー突入[秒]")
+log(result.フェーズ境界[1] / FPS, "ラストスパート開始[秒]")
 log(result.最終直線突入F / FPS, "最終直線突入[秒]")
+log(result.残り200m通過F / FPS, "残り200m通過[秒]")
 
 t = np.arange(len(result.残り距離)) / FPS
 dist = np.array(result.残り距離)
@@ -48,7 +50,7 @@ acc = np.array(result.加速度)
 plt.style.use('seaborn-dark')
 plt.rcParams['font.family'] = "Noto Sans JP"
 
-fig = plt.figure(figsize=(8, 7), dpi=100)
+fig = plt.figure(figsize=(10, 7), dpi=100)
 
 suptitle = '\n'.join([
     '{}/{}/{}/{}/{} {}/{}/{}/{} ({}) スキル回復{}%'.format(
@@ -70,7 +72,7 @@ ax_hp.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(500))
 
 ax_vel = fig.add_subplot(4, 1, 3)
 ax_vel.set_title("速度－基準速度[m/s]  (基準速度={}m/s)".format(基準速度(tokyo)), fontsize=8)
-ax_vel.set_ylim(-1.0, 5.0)
+ax_vel.set_ylim(-1.5, 5.0)
 ax_vel.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1))
 
 ax_acc = fig.add_subplot(4, 1, 4)
@@ -79,11 +81,12 @@ ax_acc.set_ylim(0.0, 0.50)
 ax_acc.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(0.1))
 
 for ax in [ax_dist, ax_hp, ax_vel, ax_acc]:
-    ax.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(10))
+    ax.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))
     ax.grid(which='major', axis='x')
     ax.grid(which='major', axis='y')
     ax.axvline(x=result.最終コーナー突入F / FPS, c='tomato', linestyle=':')
     ax.axvline(x=result.最終直線突入F / FPS, c='tomato', linestyle=':')
+    ax.axvline(x=result.残り200m通過F / FPS, c='tomato', linestyle=':')
     for frame in result.フェーズ境界:
         ax.axvline(x=frame / FPS, c='plum', linestyle='-')
 
