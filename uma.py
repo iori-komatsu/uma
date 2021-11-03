@@ -45,9 +45,6 @@ class 状態(NamedTuple):
     残り距離: float
     ウマ状態: ウマ状態
 
-    ラストスパート基準速度: float
-    ラストスパート開始位置: float  # 残り何mから開始するか
-
 class 高低(NamedTuple):
     位置: float
     高さ: float
@@ -270,18 +267,6 @@ def ラストスパート基準目標速度(状態: 状態, コース: コース
 def ラストスパート目標速度(状態: 状態, コース: コース, 補正ステータス: ステータス) -> float:
     return ラストスパート基準目標速度(状態, コース, 補正ステータス) + 目標速度_坂補正(状態, コース, 補正ステータス)
 
-#def 最大可能ラストスパート距離(状態: 状態, コース: コース, 補正ステータス: ステータス, 目標速度: float):
-#    state = 状態
-#    dist = 0.0
-#    while state.残りHP > 0:
-#        a = 加速度(状態, コース, 補正ステータス)
-#        state = state._replace(
-#            現在速度=next_velocity(state.現在速度, a, 目標速度),
-#            残りHP=秒間体力消費(状態, コース, 補正ステータス) / FPS,
-#        )
-#        dist += state.現在速度 / FPS
-#    return dist
-
 def 回復スキル回復量(回復量pct: float, コース: コース, 補正ステータス: ステータス) -> float:
     return 初期HP(補正ステータス, コース) * 回復量pct / 100.0
 
@@ -318,8 +303,6 @@ def simulate(生ステータス: ステータス, コース: コース, やる�
         残りHP=log(初期HP(status, コース), "初期HP") + log(回復スキル回復量(回復スキル回復量pct, コース, status), "回復スキル回復量"),
         残り距離=コース.距離,
         ウマ状態=ウマ状態(掛かり=False, ペースダウン=False, 下り坂加速=False),
-        ラストスパート基準速度=None,
-        ラストスパート開始位置=None,
     )
 
     result = SimulationResult(
