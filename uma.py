@@ -1,6 +1,7 @@
 from typing import Dict, NamedTuple, List
 import math
 
+S='S'
 A='A'
 B='B'
 C='C'

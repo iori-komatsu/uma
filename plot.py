@@ -14,9 +14,8 @@ status = ステータス(
     距離適性=A,
     バ場適性=A,
 )
-yaruki = 普通
+yaruki = 絶好調
 kaifuku = 回復スキル累計(金=1, 白=0, 下位固有=0, 八方にらみ=0, 焦り=0)
-
 skills = [
     スキル(
         名前='レッツ・アナボリック！',
@@ -33,6 +32,21 @@ skills = [
         補正量=0.2,
     )
 ]
+
+# ペースメーカーとしてスキルなしの差しアグネスタキオンを想定(中距離S)
+pacemaker_status = ステータス(
+    スピード=1050.0,
+    スタミナ=700.0,
+    パワー=1000.0,
+    根性=350.0,
+    賢さ=400.0,
+    脚質=差し,
+    脚質適性=A,
+    距離適性=S,
+    バ場適性=A,
+)
+pacemaker_yaruki = 絶好調
+pacemaker_kaifuku = 回復スキル累計(金=1, 白=0, 下位固有=0, 八方にらみ=0, 焦り=0)
 
 tokyo = コース(
     距離=2000, バ場種類='芝', バ場状態='重',
@@ -52,6 +66,7 @@ tokyo = コース(
 )
 
 result = simulate(status, tokyo, yaruki, kaifuku, skills)
+pacemaker_result = simulate(pacemaker_status, tokyo, pacemaker_yaruki, pacemaker_kaifuku, [])
 
 log(result.最終コーナー突入F / FPS, "最終コーナー突入[秒]")
 log(result.フェーズ境界[1] / FPS, "ラストスパート開始[秒]")
@@ -65,10 +80,18 @@ hp = np.array(result.残りHP)
 vel = np.array(result.速度)
 acc = np.array(result.加速度)
 
+log(pacemaker_result.残りHP[-1], "ペースメーカー残りHP")
+log(len(pacemaker_result.残りHP) / FPS, "ペースメーカータイム[秒]")
+pacemaker_dist = np.array(pacemaker_result.残り距離)
+if len(pacemaker_dist) < len(dist):
+    pacemaker_dist.append(np.zeros(len(dist) - len(pacemaker_dist)))
+if len(pacemaker_dist) > len(dist):
+    pacemaker_dist = pacemaker_dist[:len(dist)]
+
 plt.style.use('seaborn-dark')
 plt.rcParams['font.family'] = "Noto Sans JP"
 
-fig = plt.figure(figsize=(10, 7), dpi=100)
+fig = plt.figure(figsize=(10, 9), dpi=100)
 
 suptitle = '\n'.join([
     '{}/{}/{}/{}/{} {}/{}/{}/{} ({}) スキル回復{}%'.format(
@@ -80,25 +103,29 @@ suptitle = '\n'.join([
 ])
 fig.suptitle(suptitle, fontsize=10)
 
-ax_dist = fig.add_subplot(4, 1, 1)
+ax_dist = fig.add_subplot(5, 1, 1)
 ax_dist.set_title("残り距離[m]", fontsize=8)
 ax_dist.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(400))
 
-ax_hp = fig.add_subplot(4, 1, 2)
-ax_hp.set_title("残りHP", fontsize=8)
-ax_hp.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(500))
+ax_diff = fig.add_subplot(5, 1, 2)
+ax_diff.set_title("ペースメーカーとの相対位置[m]", fontsize=8)
+ax_diff.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1.5))
 
-ax_vel = fig.add_subplot(4, 1, 3)
+ax_vel = fig.add_subplot(5, 1, 3)
 ax_vel.set_title("速度－基準速度[m/s]  (基準速度={}m/s)".format(基準速度(tokyo)), fontsize=8)
 ax_vel.set_ylim(-1.5, 5.0)
 ax_vel.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1))
 
-ax_acc = fig.add_subplot(4, 1, 4)
+ax_acc = fig.add_subplot(5, 1, 4)
 ax_acc.set_title("加速度[m/s^2]", fontsize=8)
 ax_acc.set_ylim(0.0, 1.0)
 ax_acc.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(0.2))
 
-for ax in [ax_dist, ax_hp, ax_vel, ax_acc]:
+ax_hp = fig.add_subplot(5, 1, 5)
+ax_hp.set_title("残りHP", fontsize=8)
+ax_hp.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(500))
+
+for ax in [ax_diff, ax_dist, ax_hp, ax_vel, ax_acc]:
     ax.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(5))
     ax.grid(which='major', axis='x')
     ax.grid(which='major', axis='y')
@@ -110,12 +137,10 @@ for ax in [ax_dist, ax_hp, ax_vel, ax_acc]:
 
 fig.tight_layout()
 
-ax_dist.plot(t, dist)
-
+ax_diff.plot(t, pacemaker_dist - dist)
 ax_hp.plot(t, hp)
-
 ax_vel.plot(t, vel - 基準速度(tokyo))
-
 ax_acc.plot(t, acc)
+ax_dist.plot(t, dist)
 
 fig.savefig('out/fig.png')
